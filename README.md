@@ -53,7 +53,7 @@ psql rprecdb
 
 ```sql
 SELECT slug, similar_slug, cosine_similarity FROM similar_articles
-WHERE slug = 'python-string-formatting';
+WHERE slug = 'logistic-regression-python';
 ```
 
 |            slug            |           similar_slug           | cosine_similarity |
