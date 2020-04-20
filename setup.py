@@ -14,6 +14,7 @@ setup(
     install_requires=[
         "beautifulsoup4",
         "fire",
+        "lxml",
         "pandas",
         "psycopg2-binary",
         "requests",

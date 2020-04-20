@@ -128,7 +128,6 @@ def write_cosine_similarities_to_database(results, connection):
         cursor = connection.cursor()
         sql_string = "INSERT INTO similar_articles (slug, similar_slug, cosine_similarity) VALUES %s;"
         execute_values(cursor, sql_string, results)
-        # print(cursor.mogrify(sql_string, results).decode('utf8'))
         connection.commit()
         logger.info(f"recorded cosine_similarities to the database")
     except psycopg2.Error as e:

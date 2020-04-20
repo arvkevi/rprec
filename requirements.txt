@@ -1,5 +1,6 @@
 beautifulsoup4
 fire
+lxml
 pandas
 psycopg2-binary
 requests

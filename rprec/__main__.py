@@ -24,7 +24,6 @@ def scraper(
     else:
         DATABASE_URL = database_url
 
-    print(DATABASE_URL)
     if (
         any([database_name, database_user, database_password, database_server])
         and DATABASE_URL is not None

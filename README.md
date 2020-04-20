@@ -40,6 +40,10 @@ The `recommender` command has two modes controlled by the boolean parameter, `--
 
 The Recommender vectorizes each article using term frequency-inverse document frequency (tf-idf), performs cosine similarity on the article vectors pairwise, for each article, finally, it stores these similarity scores in the `similar_articles` table in the database.
 
+```bash
+rprec recommender --database-name=rprecdb --database-user=kevin database_host=localhost --scrape=True
+```
+
 ### Query results
 Check out the five most similar titles (slugs):
 
