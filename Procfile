@@ -1,1 +1,1 @@
-worker: rprec recommender --scrape=True
+worker: python rprec/__main__.py recommender recommender --scrape=True
