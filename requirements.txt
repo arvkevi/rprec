@@ -1,0 +1,7 @@
+beautifulsoup4
+fire
+pandas
+psycopg2-binary
+requests
+scikit-learn
+spacy

@@ -1,0 +1,43 @@
+.DS_Store
+
+# ignore data directories
+**/data
+
+# vs code
+.vscode/
+
+# jupyter
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# python stuff
+*.py[cod]
+
+# Packages
+*.egg
+*.egg-info
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+dist/
+
+#pyenv
+.python-version
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# C extensions
+*.so
