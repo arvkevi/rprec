@@ -126,12 +126,14 @@ def write_cosine_similarities_to_database(results, connection):
     """
     try:
         cursor = connection.cursor()
+        # clear the table first
+        cursor.execute("TRUNCATE TABLE similar_articles;")
         sql_string = "INSERT INTO similar_articles (slug, similar_slug, cosine_similarity) VALUES %s;"
         execute_values(cursor, sql_string, results)
         connection.commit()
         logger.info(f"recorded cosine_similarities to the database")
     except psycopg2.Error as e:
-        sys.stderr.write(f"Error while fetching data from PostgreSQL: {e}")
+        sys.stderr.write(f"Error while inserting data into PostgreSQL: {e}")
     finally:
         # closing database connection.
         if connection:
