@@ -116,19 +116,19 @@ def write_article_to_database(article_object, connection):
             connection.close()
 
 
-def write_cosine_similarities_to_database(results, connection):
+def write_similarities_to_database(results, connection):
     """record the new top 3 most similar articles by cosine similarity values
 
     :param results: list of tuples (slug, similar slug, cosine sim value)
     :type results: list
     :param connection: psycopg2 connection object
-    :type connection: psycopg2 connection object
+    :type connection: psycopg2 connection object 
     """
     try:
         cursor = connection.cursor()
         # clear the table first
         cursor.execute("TRUNCATE TABLE similar_articles;")
-        sql_string = "INSERT INTO similar_articles (slug, similar_slug, cosine_similarity) VALUES %s;"
+        sql_string = "INSERT INTO similar_articles (slug, similar_slug, cosine_similarity, doc2vec_similarity) VALUES %s;"
         execute_values(cursor, sql_string, results)
         connection.commit()
         logger.info(f"recorded cosine_similarities to the database")

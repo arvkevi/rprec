@@ -50,6 +50,7 @@ def recommender(
     database_server=None,
     database_port=5432,
     scrape=True,
+    top_five=True,
 ):
     try:
         DATABASE_URL = os.environ["DATABASE_URL"]
@@ -81,6 +82,7 @@ def recommender(
         database_server=database_server,
         database_port=database_port,
         database_url=DATABASE_URL,
+        top_five=top_five,
     )
 
 

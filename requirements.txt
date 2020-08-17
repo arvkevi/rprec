@@ -1,8 +1,12 @@
 beautifulsoup4
+fastapi
 fire
+gensim
 lxml
 pandas
 psycopg2-binary
 requests
 scikit-learn
 spacy
+sqlalchemy
+uvicorn

@@ -1,5 +1,12 @@
 # rprec
 
+## TODO
+implement doc2vec similarity
+implement fastapi
+plot doc2vec sim vs cosine sim and R2
+topic modelling
+
+
 ## Article Recommendation Engine for Real Python
 
 This app scrapes article text from Real Python tutorials daily using Heroku. The top five most 
@@ -32,7 +39,7 @@ psql -U username rprecdb < schema.sql
 #### srape
 The `scraper` command will scrape all of the Real Python tutorial articles and store the text in the database.
 ```bash
-rprec scraper --database-name=rprecdb --database-user=kevin database_host=localhost
+rprec scraper --database-name=rprecdb --database-user=kevin database_server=localhost
 ```
 
 #### recommend

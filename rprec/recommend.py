@@ -1,15 +1,16 @@
-import json
 import logging
+import numpy as np
 import pandas as pd
 import spacy
 
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import pairwise_distances
 
 from rprec.db import (
     db_connection,
     query_articles,
-    write_cosine_similarities_to_database,
+    write_similarities_to_database,
 )
 
 logger = logging.getLogger(__name__)
@@ -91,6 +92,16 @@ def article_cosine_similarity(processed_texts):
     return 1 - pairwise_distances(vectors, vectors, metric="cosine")
 
 
+def tagged_docs_to_vectors(model, tagged_docs):
+    """Make vectors suitable for downstream ML tasks"""
+    sents = tagged_docs
+    regressors = [
+            model.infer_vector(document.words, steps=20)
+            for document in sents
+        ]
+    return np.array(regressors)
+
+
 def run_recommender(
     database_name,
     database_user,
@@ -98,6 +109,7 @@ def run_recommender(
     database_server,
     database_port,
     database_url,
+    top_five=True,
 ):
     """processes Real Python article text, computes cosine similarity and writes top 3 scores to the database.
     
@@ -113,6 +125,8 @@ def run_recommender(
     :type database_port: int
     :param database_url: the environment variable for the database url in heroku
     :type database_url: str
+    :param top_five: If True, only record the top five most similar articles frr each scoring type.
+    :type top_five: bool
     """
     # first connection reads
     connection = db_connection(
@@ -126,6 +140,15 @@ def run_recommender(
     all_articles = query_articles(connection)
     processed_texts, labels = process_articles(all_articles)
     cosine_similarities = article_cosine_similarity(processed_texts)
+    # doc2vec
+    tagged_docs = [
+        TaggedDocument(doc, [label]) for doc, label in zip(processed_texts, labels)
+    ]
+    model = Doc2Vec(vector_size=100, min_count=2, epochs=50)
+    model.build_vocab(tagged_docs)
+    logger.info("Training doc2vec model...")
+    model.train(tagged_docs, total_examples=model.corpus_count, epochs=model.epochs)
+    doc_vectors = tagged_docs_to_vectors(model, tagged_docs)
 
     # second connection for write
     connection = db_connection(
@@ -139,14 +162,27 @@ def run_recommender(
     results = []
     for i in range(len(processed_texts)):
         slug = labels[i]
-        top_5_indices = cosine_similarities[i].argsort()[:-7:-1][1:]
-        top_5_labels = [labels[i] for i in top_5_indices]
-        top_5_scores = [cosine_similarities[i][_] for _ in top_5_indices]
-        results.extend(
-            [
-                (slug, labels, scores)
-                for labels, scores in zip(top_5_labels, top_5_scores)
-            ]
-        )
+        if top_five:
+            top_5_indices = cosine_similarities[i].argsort()[:-7:-1][1:]
+            similar_slugs = [labels[i] for i in top_5_indices]
+            cosine_scores = [cosine_similarities[i][j] for j in top_5_indices]
+            d2v_similar_results = model.docvecs.most_similar([doc_vectors[i, :]], topn=6)[1:]
+            d2v_similar_slugs, d2v_scores = zip(*d2v_similar_results)
+        else:
+            similar_slugs = labels
+            cosine_scores = cosine_similarities[i]
+            d2v_similar_results = model.docvecs.most_similar([doc_vectors[i, :]], topn=len(processed_texts))
+            d2v_similar_slugs, d2v_scores = zip(*d2v_similar_results)
+        
+        cosinedf = pd.DataFrame({
+            'slug': [slug] * len(similar_slugs),
+            'similar_slug': similar_slugs,
+            'cosine_scores': cosine_scores
+        })
+        d2vdf = pd.DataFrame({
+            'similar_slug': d2v_similar_slugs,
+            'd2v_scores': d2v_scores
+            })
+        results.extend(cosinedf.merge(d2vdf, on='similar_slug', how='outer').to_numpy().tolist())
 
-    write_cosine_similarities_to_database(results, connection)
+    write_similarities_to_database(results, connection)
