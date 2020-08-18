@@ -131,7 +131,7 @@ def write_similarities_to_database(results, connection):
         sql_string = "INSERT INTO similar_articles (slug, similar_slug, cosine_similarity, doc2vec_similarity) VALUES %s;"
         execute_values(cursor, sql_string, results)
         connection.commit()
-        logger.info(f"recorded cosine_similarities to the database")
+        logger.info(f"recorded article similarities to the database")
     except psycopg2.Error as e:
         sys.stderr.write(f"Error while inserting data into PostgreSQL: {e}")
     finally:

@@ -161,6 +161,8 @@ def run_recommender(
     )
     results = []
     for i in range(len(processed_texts)):
+        if i % 10 == 0:
+            logger.info(f"Finished recording {i} articles")
         slug = labels[i]
         if top_five:
             top_5_indices = cosine_similarities[i].argsort()[:-7:-1][1:]
@@ -183,6 +185,6 @@ def run_recommender(
             'similar_slug': d2v_similar_slugs,
             'd2v_scores': d2v_scores
             })
-        results.extend(cosinedf.merge(d2vdf, on='similar_slug', how='outer').to_numpy().tolist())
+        results.extend(cosinedf.merge(d2vdf, on='similar_slug', how='outer').dropna(subset=['slug', 'similar_slug']).to_numpy().tolist())
 
     write_similarities_to_database(results, connection)
