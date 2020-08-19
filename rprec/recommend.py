@@ -182,9 +182,11 @@ def run_recommender(
             'cosine_scores': cosine_scores
         })
         d2vdf = pd.DataFrame({
+            'slug': [slug] * len(similar_slugs),
             'similar_slug': d2v_similar_slugs,
             'd2v_scores': d2v_scores
             })
-        results.extend(cosinedf.merge(d2vdf, on='similar_slug', how='outer').dropna(subset=['slug', 'similar_slug']).to_numpy().tolist())
+
+        results.extend(cosinedf.merge(d2vdf, on=['slug', 'similar_slug'], how='outer').fillna(-1.0).to_numpy().tolist())
 
     write_similarities_to_database(results, connection)
