@@ -1,4 +1,5 @@
 import logging
+import re
 import requests
 import time
 
@@ -10,25 +11,26 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
 
 
-def tutorial_categores_from_rp_sitemap(sitemap_url):
+def tutorial_categories_from_rp_sitemap(sitemap_url, wrong_endpoints):
     """Scrapes a list of tutorial categories from the Real Python sitemap.
     
     :param sitemap_url: The url string for the Real Python sitemap xml.
     :type sitemap_url: str
+    :param wrong_endpoints: endpoints that don't have content.
+    :type wrong_endpoints: list
     :return: A list Real Python tutorial categories
     :rtype: list
     """
     soup = BeautifulSoup(requests.get(sitemap_url).text, "lxml")
 
-    categories = []
+    slugs_to_read = []
     for loc in soup.select("url > loc"):
-        if "tutorials" in loc.text:
-            categories.append(loc.text)
+        if any([f"https://realpython.com/{endpoint}" in loc.text for endpoint in wrong_endpoints]):
+            continue
+        else:
+            slugs_to_read.append(loc.text)
 
-    all_url = "https://realpython.com/tutorials/all/"
-    categories.remove(all_url)
-
-    return categories
+    return slugs_to_read
 
 
 def extract_slugs(soup):
@@ -44,34 +46,10 @@ def extract_slugs(soup):
         yield link["href"].strip("/")
 
 
-def process_slugs(slugs):
-    """Creates a dictionary of slugs by type: (article, interview, courses)
-    
-    :param slugs: List of article slugs
-    :type slugs: list
-    :return: Dictionary of article slugs separated by category 
-    :rtype: dict
-    """
-    slugs_by_type = {
-        "articles": [],
-        "courses": [],
-        "interviews": [],
-    }
-    for slug in slugs:
-        if slug.startswith("courses/"):
-            slugs_by_type["courses"].append(slug[8:])
-        elif slug.startswith("interview"):
-            slugs_by_type["interviews"].append(slug)
-        else:
-            slugs_by_type["articles"].append(slug)
-
-    return slugs_by_type
-
-
 def scrape_article(slug):
     """Scrapes the article text body from a Real Python tutorial page.
     
-    :param slug: Name of the article slug to 
+    :param slug: Name of the article slug to parse
     :type slug: str
     :return: (slug, author, article_text)
     :rtype: tuple
@@ -93,63 +71,6 @@ def scrape_article(slug):
         article_text += "\n" + "".join(element.findAll(text=True))
 
     return slug, author, article_text
-
-
-def scrape_category_pages_for_slugs(categories, database_slugs):
-    """Scrape each category page for article slugs. Some category pages are paginated.
-    
-    :param categories: List of categories to scrape
-    :type categories: list
-    :param database_slugs: List of slugs already in the database
-    :type database_slugs: list
-    :return: List of new RP articles to scrape
-    :rtype: list
-    """
-    slugs = []
-    current_page_number = 1
-    for category_url in categories:
-        logger.info(f"scraping: {category_url}")
-        category_page_url = f"{category_url}"
-        response = requests.get(category_page_url)
-        soup = BeautifulSoup(response.content, "html.parser")
-        is_paginated = soup.find_all("li", {"class": "page-item"})
-        time.sleep(1)
-
-        if not is_paginated:
-            for slug in extract_slugs(soup):
-                if slug in slugs or slug in database_slugs:
-                    continue
-                slugs.append(slug)
-            # move to the next category
-            continue
-
-        while True:
-            # on the page listing articles for this category
-            category_page_url = f"{category_url}page/{current_page_number}"
-            response = requests.get(category_page_url)
-            soup = BeautifulSoup(response.content, "html.parser")
-
-            # extract article slugs
-            for slug in extract_slugs(soup):
-                if slug in slugs or slug in database_slugs:
-                    continue
-                slugs.append(slug)
-
-            # should we go on?
-            if current_page_number > 1:
-                try:
-                    find_last_page = soup.find("li", {"class": "page-item disabled"})
-                    # Search for hex c2bb character, indicating last page
-                    # Note: on the first page c2ab will be disabled
-                    if find_last_page.text == bytes.fromhex("c2bb").decode("utf-8"):
-                        break
-                except AttributeError:
-                    # we're in the middle pages, keep scrolling
-                    pass
-
-            current_page_number += 1
-            time.sleep(5)
-    return slugs
 
 
 def run_scraper(
@@ -176,7 +97,24 @@ def run_scraper(
     :type database_url: str
     """
     rp_sitemap_url = "http://realpython.com/sitemap.xml"
-    categories = tutorial_categores_from_rp_sitemap(rp_sitemap_url)
+
+    wrong_endpoints = [
+        'all',
+        'quizzes',
+        'questions',
+        'resources',
+        'security',
+        'sponsorships',
+        'start-here',
+        'support',
+        'team',
+        'testimonials',
+        'tutorials',
+        'write-for-us',
+        'learning-paths',
+        'lessons',   
+    ]
+    urls_to_read = tutorial_categories_from_rp_sitemap(rp_sitemap_url, wrong_endpoints)
 
     # first check the database for slugs so we can skip those
     connection = db_connection(
@@ -188,15 +126,15 @@ def run_scraper(
         database_url,
     )
     database_slugs = query_database_slugs(connection)
-    slugs = scrape_category_pages_for_slugs(categories, database_slugs)
+    # slugs = scrape_category_pages_for_slugs(categories, database_slugs)
 
-    slugs_by_type = process_slugs(slugs)
-
-    if not slugs_by_type["articles"]:
-        logging.info("Did not find any new Real Python articles")
 
     # iterate the new RP articles and write them to db
-    for slug in slugs_by_type["articles"]:
+    for url in urls_to_read:
+        m = re.search(r'^.*\/([^/]*)/.*$', url)
+        slug = m.group(1)
+        if slug in database_slugs:
+            continue
         article_object = scrape_article(slug)
         # I close the connection object after each write
         connection = db_connection(
