@@ -18,6 +18,10 @@ cd rprec
 python setup.py install
 ```
 
+### API documentation
+
+Documentation for the API is available with Swagger UI [here](http://realpython-recommender.herokuapp.com/docs#/).
+
 ### Usage
 
 There are currently two functions from the command line, `scraper` and `recommender`.
