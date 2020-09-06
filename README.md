@@ -1,16 +1,13 @@
 # rprec
 
-## TODO
-implement doc2vec similarity
-implement fastapi
-plot doc2vec sim vs cosine sim and R2
-topic modelling
 
+## Content Recommendation Engine for Real Python
 
-## Article Recommendation Engine for Real Python
+This app scrapes text from Real Python content daily. Raw text and metadata are stored in a Postgres database on deployed to heroku. The text is processed using a natural langauge processing (NLP) pipeline using `spacy` then fed a cosine similarity model developed in `scikit-learn` as well as a doc2vec model using `gensim`. The top three most simliar articles (or content) are stored in the database. Using `fastapi`, an API is available to interaction with the database.  
 
-This app scrapes article text from Real Python tutorials daily using Heroku. The top five most 
-similar articles to every article are stored in a datbase.
+The utility of this app can be realized in a Google Chrome extension, [Real Python Content Recommender](https://github.com/arvkevi/rprec-chrome-extension), available in the [Chrome Web Store](). Once installed, the Chrome extension allows the user to click a button when they are on a Real Python page to see the top 3 most similar articles to the one they are currently reading.
+
+![cosine_vs_doc2vec](images/cosine_vs_doc2vec.png)
 
 ![realpython_cosine](images/cosine_threshold.png)
 
