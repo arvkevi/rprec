@@ -33,19 +33,6 @@ def tutorial_categories_from_rp_sitemap(sitemap_url, wrong_endpoints):
     return slugs_to_read
 
 
-def extract_slugs(soup):
-    """extract article slugs from /tutorials/* page
-    
-    :param soup: A beautifulsoup4 object
-    :type soup: bs4.BeautifulSoup
-    :yield: article slug
-    :rtype: str
-    """
-    for div in soup.findAll("div", {"class": "card-body m-0 p-0 mt-2"}):
-        link = div.find("a", href=True)
-        yield link["href"].strip("/")
-
-
 def scrape_article(slug):
     """Scrapes the article text body from a Real Python tutorial page.
     
