@@ -5,7 +5,7 @@ from pydantic import BaseModel as PydanticBaseModel, validator
 
 
 class BaseModel(PydanticBaseModel):
-    @validator('*')
+    @validator("*")
     def change_nan_to_none(cls, v, values, field):
         if field.outer_type_ is float and isnan(v):
             return None
@@ -34,6 +34,6 @@ class Article(ArticleBase):
     author: str
     text: str
     similar_articles: List[SimilarArticle] = []
-    
+
     class Config:
         orm_mode = True

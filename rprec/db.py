@@ -16,8 +16,8 @@ def db_connection(
     database_port,
     database_url,
 ):
-    """Connect to the database containing RP articles and similarity scores 
-    
+    """Connect to the database containing RP articles and similarity scores
+
     :param database_name: Name of the db
     :type database_name: str
     :param database_user: database username
@@ -47,7 +47,7 @@ def db_connection(
 
 def query_database_slugs(connection):
     """Get the article slugs already in the database and return a list.
-    
+
     :param connection: psycopg2 connection
     :type connection: psycopg2.extensions.connection
     :return: list of slugs in the database
@@ -122,7 +122,7 @@ def write_similarities_to_database(results, connection):
     :param results: list of tuples (slug, similar slug, cosine sim value)
     :type results: list
     :param connection: psycopg2 connection object
-    :type connection: psycopg2 connection object 
+    :type connection: psycopg2 connection object
     """
     try:
         cursor = connection.cursor()

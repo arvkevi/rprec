@@ -10,7 +10,11 @@ setup(
     author="Kevin Arvai",
     author_email="<arvkevi@gmail.com>",
     license="",
-    entry_points={"console_scripts": [f"{__project__} = {__project__}.__main__:main",]},
+    entry_points={
+        "console_scripts": [
+            f"{__project__} = {__project__}.__main__:main",
+        ]
+    },
     install_requires=[
         "beautifulsoup4",
         "fire",

@@ -18,7 +18,7 @@ logging.basicConfig(level="INFO")
 
 
 def process_articles(all_articles):
-    """Process the scraped Real Python articles 
+    """Process the scraped Real Python articles
     :param all_articles: The articles object from query_articles
     :return: processed texts and the slug ids
     """
@@ -55,8 +55,8 @@ def spacy_tokenizer(raw_texts):
 
 def is_token_allowed(token):
     """
-        Only allow valid tokens which are not stop words
-        and punctuation symbols.
+    Only allow valid tokens which are not stop words
+    and punctuation symbols.
     """
     if not token or not token.string.strip() or token.is_stop or token.is_punct:
         return False
@@ -75,7 +75,7 @@ def identity_tokenizer(text):
 
 def article_cosine_similarity(processed_texts):
     """Return pairwise similarity of document vectors by performing tfidf on article tokens.
-    
+
     :param processed_texts: list of article tokens
     :type processed_texts: list
     :return: pariwise cosine similarity values for each article
@@ -95,10 +95,7 @@ def article_cosine_similarity(processed_texts):
 def tagged_docs_to_vectors(model, tagged_docs):
     """Make vectors suitable for downstream ML tasks"""
     sents = tagged_docs
-    regressors = [
-            model.infer_vector(document.words, steps=20)
-            for document in sents
-        ]
+    regressors = [model.infer_vector(document.words, steps=20) for document in sents]
     return np.array(regressors)
 
 
@@ -112,7 +109,7 @@ def run_recommender(
     top_five=True,
 ):
     """processes Real Python article text, computes cosine similarity and writes top 3 scores to the database.
-    
+
     :param database_name: Name of the db
     :type database_name: str
     :param database_user: database username
@@ -168,25 +165,38 @@ def run_recommender(
             top_5_indices = cosine_similarities[i].argsort()[:-7:-1][1:]
             similar_slugs = [labels[i] for i in top_5_indices]
             cosine_scores = [cosine_similarities[i][j] for j in top_5_indices]
-            d2v_similar_results = model.docvecs.most_similar([doc_vectors[i, :]], topn=6)[1:]
+            d2v_similar_results = model.docvecs.most_similar(
+                [doc_vectors[i, :]], topn=6
+            )[1:]
             d2v_similar_slugs, d2v_scores = zip(*d2v_similar_results)
         else:
             similar_slugs = labels
             cosine_scores = cosine_similarities[i]
-            d2v_similar_results = model.docvecs.most_similar([doc_vectors[i, :]], topn=len(processed_texts))
+            d2v_similar_results = model.docvecs.most_similar(
+                [doc_vectors[i, :]], topn=len(processed_texts)
+            )
             d2v_similar_slugs, d2v_scores = zip(*d2v_similar_results)
-        
-        cosinedf = pd.DataFrame({
-            'slug': [slug] * len(similar_slugs),
-            'similar_slug': similar_slugs,
-            'cosine_scores': cosine_scores
-        })
-        d2vdf = pd.DataFrame({
-            'slug': [slug] * len(similar_slugs),
-            'similar_slug': d2v_similar_slugs,
-            'd2v_scores': d2v_scores
-            })
 
-        results.extend(cosinedf.merge(d2vdf, on=['slug', 'similar_slug'], how='outer').fillna(-1.0).to_numpy().tolist())
+        cosinedf = pd.DataFrame(
+            {
+                "slug": [slug] * len(similar_slugs),
+                "similar_slug": similar_slugs,
+                "cosine_scores": cosine_scores,
+            }
+        )
+        d2vdf = pd.DataFrame(
+            {
+                "slug": [slug] * len(similar_slugs),
+                "similar_slug": d2v_similar_slugs,
+                "d2v_scores": d2v_scores,
+            }
+        )
+
+        results.extend(
+            cosinedf.merge(d2vdf, on=["slug", "similar_slug"], how="outer")
+            .fillna(-1.0)
+            .to_numpy()
+            .tolist()
+        )
 
     write_similarities_to_database(results, connection)

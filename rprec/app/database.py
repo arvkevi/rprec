@@ -9,9 +9,11 @@ from sqlalchemy.orm import sessionmaker
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
-    logger.critical('The DATABASE_URL environment variable is not set. Please set it to a valid database url.')
+    logger.critical(
+        "The DATABASE_URL environment variable is not set. Please set it to a valid database url."
+    )
     sys.exit(1)
 
 engine = create_engine(DATABASE_URL)

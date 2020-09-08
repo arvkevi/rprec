@@ -88,7 +88,10 @@ def recommender(
 
 def main():
     fire.Fire(
-        {"scraper": scraper, "recommender": recommender,}
+        {
+            "scraper": scraper,
+            "recommender": recommender,
+        }
     )
 
 
