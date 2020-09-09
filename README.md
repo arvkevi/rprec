@@ -6,6 +6,8 @@ This app scrapes text from Real Python content daily. Raw text and metadata are 
 
 The utility of this app can be realized in a Google Chrome extension, [Real Python Content Recommender](https://github.com/arvkevi/rprec-chrome-extension), available in the [Chrome Web Store](). Once installed, the Chrome extension allows the user to click a button when they are on a Real Python page to see the top 3 most similar articles to the one they are currently reading.
 
+**Disclaimer:** This extension is not an official realpython.com project nor is it affiliated with realpython.com.
+
 ![cosine_vs_doc2vec](images/cosine_vs_doc2vec.png)
 
 ![realpython_cosine](images/cosine_threshold.png)
