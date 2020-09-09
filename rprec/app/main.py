@@ -34,7 +34,7 @@ def get_db():
 @app.get(
     "/articles/", response_model=List[schemas.Article], response_model_include={"slug"}
 )
-def list_article_slugs(
+async def list_article_slugs(
     skip: int = 0, limit: int = 10000, db: Session = Depends(get_db)
 ):
     articles = queries.list_articles(db, skip=skip, limit=limit)
@@ -42,7 +42,7 @@ def list_article_slugs(
 
 
 @app.get("/articles/{slug}", response_model=schemas.Article)
-def article_info(slug: str, db: Session = Depends(get_db)):
+async def article_info(slug: str, db: Session = Depends(get_db)):
     article = queries.get_article(db, slug=slug)
     if article is None:
         raise HTTPException(status_code=404, detail="Article slug not found")
@@ -54,7 +54,7 @@ def article_info(slug: str, db: Session = Depends(get_db)):
     response_model=List[schemas.SimilarArticle],
     response_model_include={"slug", "similar_slug", "cosine_similarity"},
 )
-def top_n_cosine_similarity(
+async def top_n_cosine_similarity(
     slug: str, db: Session = Depends(get_db), limit: Optional[int] = 3
 ):
     article = queries.get_cosine(db, slug=slug, limit=limit)
@@ -68,7 +68,7 @@ def top_n_cosine_similarity(
     response_model=List[schemas.SimilarArticle],
     response_model_include={"slug", "similar_slug", "doc2vec_similarity"},
 )
-def top_n_doc2vec_similarity(
+async def top_n_doc2vec_similarity(
     slug: str, db: Session = Depends(get_db), limit: Optional[int] = 3
 ):
     article = queries.get_doc2vec(db, slug=slug, limit=limit)
