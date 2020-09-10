@@ -4,7 +4,7 @@
 
 This app scrapes text from Real Python content daily. Raw text and metadata are stored in a Postgres database on deployed to heroku. The text is processed using a natural langauge processing (NLP) pipeline using [`spacy`](https://spacy.io/) then fed a cosine similarity model developed in [`scikit-learn`](https://scikit-learn.org/stable/) as well as a doc2vec model using [`gensim`](https://radimrehurek.com/gensim/). The top three most simliar articles (or content) are stored in the database. Using [`fastapi`](https://fastapi.tiangolo.com/), an API is available to interaction with the database.  
 
-The utility of this app can be realized in a Google Chrome extension, [Real Python Content Recommender](https://github.com/arvkevi/rprec-chrome-extension), available in the [Chrome Web Store](). Once installed, the Chrome extension allows the user to click a button when they are on a Real Python page to see the top 3 most similar articles to the one they are currently reading.
+The utility of this app can be realized in a Google Chrome extension, [Real Python Content Recommender](https://github.com/arvkevi/rprec-chrome-extension), available in the [Chrome Web Store](https://chrome.google.com/webstore/detail/real-python-content-recom/abkpmgoodjgfkhjkkbaiogkomehhokoc?hl=en&authuser=0). Once installed, the Chrome extension allows the user to click a button when they are on a Real Python page to see the top 3 most similar articles to the one they are currently reading.
 
 **Disclaimer:** This extension is not an official realpython.com project nor is it affiliated with realpython.com.
 
