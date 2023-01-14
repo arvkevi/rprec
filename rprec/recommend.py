@@ -38,12 +38,12 @@ def spacy_tokenizer(raw_texts):
     """
     # use spacy to process the raw text into spcay documents
     try:
-        nlp = spacy.load("en")
+        nlp = spacy.load("en_core_web_sm")
     except OSError:
         from spacy.cli import download
 
         download("en")
-        nlp = spacy.load("en")
+        nlp = spacy.load("en_core_web_sm")
 
     texts = []
     for doc in nlp.pipe(raw_texts, n_threads=4, disable=["tagger", "parser", "ner"]):
