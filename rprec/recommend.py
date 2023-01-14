@@ -46,7 +46,7 @@ def spacy_tokenizer(raw_texts):
         nlp = spacy.load("en_core_web_sm")
 
     texts = []
-    for doc in nlp.pipe(raw_texts, n_threads=4, disable=["tagger", "parser", "ner"]):
+    for doc in nlp.pipe(raw_texts, disable=["tagger", "parser", "ner"]):
         texts.append(
             [preprocess_token(token) for token in doc if is_token_allowed(token)]
         )
