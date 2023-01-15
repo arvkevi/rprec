@@ -58,9 +58,10 @@ def is_token_allowed(token):
     Only allow valid tokens which are not stop words
     and punctuation symbols.
     """
-    if not token or not token.string.strip() or token.is_stop or token.is_punct:
+    if token.is_stop or token.is_punct or token.is_space:
         return False
-    return True
+    else:
+        return True
 
 
 def preprocess_token(token):
@@ -95,7 +96,7 @@ def article_cosine_similarity(processed_texts):
 def tagged_docs_to_vectors(model, tagged_docs):
     """Make vectors suitable for downstream ML tasks"""
     sents = tagged_docs
-    regressors = [model.infer_vector(document.words, steps=20) for document in sents]
+    regressors = [model.infer_vector(document.words, epochs=10) for document in sents]
     return np.array(regressors)
 
 
